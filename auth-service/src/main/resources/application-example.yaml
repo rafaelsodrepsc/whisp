@@ -7,8 +7,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/whisp_auth
-    username: whisp
-    password: whisp123
+    username: seu_usuario
+    password: sua_senha
 
   jpa:
     hibernate:
@@ -17,3 +17,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+jwt:
+  secret: seu_secret_base64_aqui
+  expiration: 900000
+  refresh-expiration: 604800000
