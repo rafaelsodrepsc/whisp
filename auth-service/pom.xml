@@ -9,8 +9,8 @@
 	</parent>
 	<groupId>com.whisp</groupId>
 	<artifactId>auth-service</artifactId>
+	<name>auth-service</name>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
 	<description/>
 	<url/>
 	<licenses>
