@@ -9,6 +9,7 @@ import com.whisp.auth.exception.InvalidTokenException;
 import com.whisp.auth.exception.UsernameAlreadyExistsException;
 import com.whisp.auth.model.User;
 import com.whisp.auth.repository.UserRepository;
+import com.whisp.common.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.whisp.auth.service;
+package com.whisp.common.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
