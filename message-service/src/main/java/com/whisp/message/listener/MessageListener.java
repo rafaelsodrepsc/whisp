@@ -1,15 +1,11 @@
 package com.whisp.message.listener;
 
 import com.whisp.common.event.MessageEvent;
-import com.whisp.common.event.MessageStatus;
 import com.whisp.message.entity.Message;
 import com.whisp.message.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor

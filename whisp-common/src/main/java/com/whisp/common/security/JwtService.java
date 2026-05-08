@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -11,6 +12,7 @@ import java.util.Base64;
 import java.util.Date;
 
 @Service
+@ConditionalOnProperty(name = "jwt.secret")
 public class JwtService {
 
     @Value("${jwt.secret}")
