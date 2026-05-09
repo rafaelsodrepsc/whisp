@@ -19,9 +19,9 @@ public class MessagePublisher {
         kafkaTemplate.send(topic, message)
                 .whenComplete((result, ex) -> {
                     if (ex != null) {
-                        log.info("ERRO ao publicar no Kafka: {}", ex.getMessage());
+                        log.error("ERRO ao publicar no Kafka: {}", ex.getMessage());
                     } else {
-                        log.error(">>> Publicado no Kafka offset: {}", result.getRecordMetadata().offset());
+                        log.info(">>> Publicado no Kafka offset: {}", result.getRecordMetadata().offset());
                     }
                 });
     }
