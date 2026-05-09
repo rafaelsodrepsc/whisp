@@ -1,9 +1,11 @@
 package com.whisp.chat.messaging;
 
 import com.whisp.common.event.MessageEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class MessagePublisher {
 
@@ -13,8 +15,15 @@ public class MessagePublisher {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void publish(String topic, MessageEvent message){
-        kafkaTemplate.send(topic, message);
+    public void publish(String topic, MessageEvent message) {
+        kafkaTemplate.send(topic, message)
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        log.info("ERRO ao publicar no Kafka: {}", ex.getMessage());
+                    } else {
+                        log.error(">>> Publicado no Kafka offset: {}", result.getRecordMetadata().offset());
+                    }
+                });
     }
 
 }
