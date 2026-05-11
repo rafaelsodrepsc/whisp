@@ -3,10 +3,7 @@ package com.whisp.auth.service;
 import com.whisp.auth.dto.AuthResponse;
 import com.whisp.auth.dto.LoginRequest;
 import com.whisp.auth.dto.RegisterRequest;
-import com.whisp.auth.exception.EmailAlreadyExistsException;
-import com.whisp.auth.exception.InvalidCredentialsException;
-import com.whisp.auth.exception.InvalidTokenException;
-import com.whisp.auth.exception.UsernameAlreadyExistsException;
+import com.whisp.auth.exception.*;
 import com.whisp.auth.model.User;
 import com.whisp.auth.repository.UserRepository;
 import com.whisp.common.security.JwtService;
@@ -60,7 +57,7 @@ public class AuthService {
 
         String userId = jwtService.extractUserId(refreshToken);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(UserNotFoundException::new);
 
         String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
 
