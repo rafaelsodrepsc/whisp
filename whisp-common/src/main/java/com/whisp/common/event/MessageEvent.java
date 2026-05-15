@@ -8,5 +8,6 @@ public record MessageEvent(
         String senderId,
         String content,
         MessageStatus status,
-        Instant sentAt
+        Instant sentAt,
+        String correlationId
 ) {}

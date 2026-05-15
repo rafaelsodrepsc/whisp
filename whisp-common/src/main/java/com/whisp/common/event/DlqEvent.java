@@ -6,5 +6,6 @@ public record DlqEvent(
         String originalMessageId,
         String reason,
         MessageEvent originalMessage,
-        Instant failedAt
+        Instant failedAt,
+        String correlationId
 ) {}

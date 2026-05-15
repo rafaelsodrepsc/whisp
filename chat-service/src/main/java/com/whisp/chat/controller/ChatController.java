@@ -32,7 +32,8 @@ public class ChatController {
                 principal.getName(),
                 message.getContent(),
                 MessageStatus.SENT,
-                Instant.now()
+                Instant.now(),
+                UUID.randomUUID().toString()
         );
 
         messagePublisher.publish("chat.messages", event);

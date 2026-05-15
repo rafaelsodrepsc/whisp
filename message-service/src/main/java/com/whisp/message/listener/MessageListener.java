@@ -25,7 +25,7 @@ public class MessageListener {
     @KafkaListener(topics = "chat.messages", groupId = "message-service")
     public void listen(MessageEvent message) {
         try {
-            log.info("Consumindo mensagem: {}", message.id());
+            log.info("Consumindo mensagem: {} correlationId: {}", message.id(), message.correlationId());
             Message event = new Message(
                     message.id(),
                     message.roomId(),
@@ -46,7 +46,8 @@ public class MessageListener {
                 original.id(),
                 reason,
                 original,
-                Instant.now()
+                Instant.now(),
+                original.correlationId()
         );
 
         dlqKafkaTemplate.send(DLQ_TOPIC, dlqEvent)

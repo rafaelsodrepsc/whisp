@@ -14,6 +14,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
 import java.time.Instant;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -38,7 +39,9 @@ class MessageListenerTest {
                 "user-789",
                 "Olá, mundo!",
                 MessageStatus.SENT,
-                Instant.now()
+                Instant.now(),
+                UUID.randomUUID().toString()
+
         );
     }
 
