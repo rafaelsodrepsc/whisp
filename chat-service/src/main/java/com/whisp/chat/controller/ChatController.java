@@ -10,6 +10,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -22,16 +23,18 @@ public class ChatController {
 
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/chat/{roomId}")
-    public ChatMessage sendMessage(ChatMessage message) {
-        log.info(">>> Mensagem recebida: {} ", message.getContent());
+    public ChatMessage sendMessage(ChatMessage message, Principal principal) {
+        message.setSenderId(principal.getName());
+
         MessageEvent event = new MessageEvent(
                 UUID.randomUUID().toString(),
                 message.getRoomId(),
-                message.getSenderId(),
+                principal.getName(),
                 message.getContent(),
                 MessageStatus.SENT,
                 Instant.now()
         );
+
         messagePublisher.publish("chat.messages", event);
         return message;
     }
