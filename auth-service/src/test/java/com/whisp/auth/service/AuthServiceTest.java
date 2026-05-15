@@ -26,13 +26,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Testes unitários do AuthService.
- *
- * Todos os colaboradores (UserRepository, PasswordEncoder, JwtService)
- * são mocks -> sem banco, sem Spring context, sem geração real de token.
- * Cada teste valida apenas a lógica de decisão do AuthService
- */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
@@ -45,6 +38,9 @@ class AuthServiceTest {
     @Mock
     private JwtService jwtService;
 
+    @Mock
+    private RefreshTokenStore refreshTokenStore;
+
     @InjectMocks
     private AuthService authService;
 
@@ -52,8 +48,6 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Usuário base reutilizado nos testes de login e refresh
-        // ID como String -> compatível com o modelo atual do projeto
         user = User.builder()
                 .id("user-123")
                 .username("rafael")
@@ -74,7 +68,6 @@ class AuthServiceTest {
 
         authService.register(request);
 
-        // Valida que o repositório foi chamado uma vez para salvar o usuário
         verify(userRepository, times(1)).save(any(User.class));
     }
 
@@ -87,7 +80,6 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.register(request))
                 .isInstanceOf(EmailAlreadyExistsException.class);
 
-        // Garante que o save nunca foi chamado -> email duplicado deve ser barrado antes
         verify(userRepository, never()).save(any());
     }
 
@@ -108,7 +100,7 @@ class AuthServiceTest {
 
     @Test
     void shouldLoginSuccessfully() {
-        LoginRequest request = new LoginRequest("rafael@whisp.com","senha123");
+        LoginRequest request = new LoginRequest("rafael@whisp.com", "senha123");
 
         when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(request.getPassword(), user.getPasswordHash())).thenReturn(true);
@@ -119,6 +111,7 @@ class AuthServiceTest {
 
         assertThat(response.accessToken()).isEqualTo("access-token");
         assertThat(response.refreshToken()).isEqualTo("refresh-token");
+        verify(refreshTokenStore, times(1)).save(user.getId(), "refresh-token");
     }
 
     @Test
@@ -151,13 +144,15 @@ class AuthServiceTest {
         when(jwtService.isTokenValid(refreshToken)).thenReturn(true);
         when(jwtService.extractUserId(refreshToken)).thenReturn(user.getId());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(refreshTokenStore.find(user.getId())).thenReturn(Optional.of(refreshToken));
         when(jwtService.generateAccessToken(user.getId(), user.getEmail())).thenReturn("new-access-token");
+        when(jwtService.generateRefreshToken(user.getId(), user.getEmail())).thenReturn("new-refresh-token");
 
         AuthResponse response = authService.refresh(refreshToken);
 
         assertThat(response.accessToken()).isEqualTo("new-access-token");
-        // O refresh token original deve ser retornado sem alteração
-        assertThat(response.refreshToken()).isEqualTo(refreshToken);
+        assertThat(response.refreshToken()).isEqualTo("new-refresh-token");
+        verify(refreshTokenStore, times(1)).save(user.getId(), "new-refresh-token");
     }
 
     @Test
@@ -169,6 +164,20 @@ class AuthServiceTest {
     }
 
     @Test
+    void shouldThrowWhenRefreshTokenNotFoundInRedis() {
+        String refreshToken = "valid-refresh-token";
+
+        when(jwtService.isTokenValid(refreshToken)).thenReturn(true);
+        when(jwtService.extractUserId(refreshToken)).thenReturn(user.getId());
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(refreshTokenStore.find(user.getId())).thenReturn(Optional.empty());
+
+        // token válido pelo JWT mas não existe no Redis — já foi usado ou expirou
+        assertThatThrownBy(() -> authService.refresh(refreshToken))
+                .isInstanceOf(InvalidTokenException.class);
+    }
+
+    @Test
     void shouldThrowWhenUserNotFoundOnRefresh() {
         String refreshToken = "valid-refresh-token";
 
@@ -176,7 +185,6 @@ class AuthServiceTest {
         when(jwtService.extractUserId(refreshToken)).thenReturn("ghost-user-id");
         when(userRepository.findById("ghost-user-id")).thenReturn(Optional.empty());
 
-        // Token válido mas usuário deletado -> deve lançar UserNotFoundException
         assertThatThrownBy(() -> authService.refresh(refreshToken))
                 .isInstanceOf(UserNotFoundException.class);
     }

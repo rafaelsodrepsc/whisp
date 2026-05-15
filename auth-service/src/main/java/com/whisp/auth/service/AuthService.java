@@ -18,6 +18,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenStore refreshTokenStore;
 
     public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -47,6 +48,9 @@ public class AuthService {
         String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
         String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail());
 
+        // salva o refresh token no Redis com TTL de 7 dias
+        refreshTokenStore.save(user.getId(), refreshToken);
+
         return new AuthResponse(accessToken, refreshToken);
     }
 
@@ -56,11 +60,35 @@ public class AuthService {
         }
 
         String userId = jwtService.extractUserId(refreshToken);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
 
-        String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
+        // verifica se o token existe no Redis e se bate com o enviado
+        String storedToken = refreshTokenStore.find(userId)
+                .orElseThrow(InvalidTokenException::new);
 
-        return new AuthResponse(newAccessToken, refreshToken);
+        if (!storedToken.equals(refreshToken)) {
+            // token já foi rotacionado, possível reuso de token roubado
+            refreshTokenStore.delete(userId); // invalida tudo por segurança
+            throw new InvalidTokenException();
+        }
+
+        String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
+        String newRefreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail());
+
+        // rotaciona, deleta o antigo, salva o novo
+        refreshTokenStore.save(userId, newRefreshToken);
+
+        return new AuthResponse(newAccessToken, newRefreshToken);
+    }
+
+    public void logout(String refreshToken) {
+        if (!jwtService.isTokenValid(refreshToken)) {
+            throw new InvalidTokenException();
+        }
+
+        String userId = jwtService.extractUserId(refreshToken);
+        refreshTokenStore.delete(userId);
     }
 }
