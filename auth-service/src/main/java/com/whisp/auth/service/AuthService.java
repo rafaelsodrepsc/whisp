@@ -6,7 +6,8 @@ import com.whisp.auth.dto.RegisterRequest;
 import com.whisp.auth.exception.*;
 import com.whisp.auth.model.User;
 import com.whisp.auth.repository.UserRepository;
-import com.whisp.common.security.JwtService;
+import com.whisp.common.security.TokenIssuer;
+import com.whisp.common.security.TokenVerifier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,8 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final TokenVerifier tokenVerifier;
+    private final TokenIssuer tokenIssuer;
     private final RefreshTokenStore refreshTokenStore;
 
     public void register(RegisterRequest request) {
@@ -45,8 +47,8 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
-        String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail());
+        String accessToken = tokenIssuer.generateAccessToken(user.getId(), user.getEmail());
+        String refreshToken = tokenIssuer.generateRefreshToken(user.getId(), user.getEmail());
 
         // salva o refresh token no Redis com TTL de 7 dias
         refreshTokenStore.save(user.getId(), refreshToken);
@@ -55,11 +57,11 @@ public class AuthService {
     }
 
     public AuthResponse refresh(String refreshToken) {
-        if (!jwtService.isTokenValid(refreshToken)) {
+        if (!tokenVerifier.isTokenValid(refreshToken)) {
             throw new InvalidTokenException();
         }
 
-        String userId = jwtService.extractUserId(refreshToken);
+        String userId = tokenVerifier.extractUserId(refreshToken);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
@@ -74,8 +76,8 @@ public class AuthService {
             throw new InvalidTokenException();
         }
 
-        String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
-        String newRefreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail());
+        String newAccessToken = tokenIssuer.generateAccessToken(user.getId(), user.getEmail());
+        String newRefreshToken = tokenIssuer.generateRefreshToken(user.getId(), user.getEmail());
 
         // rotaciona, deleta o antigo, salva o novo
         refreshTokenStore.save(userId, newRefreshToken);
@@ -84,11 +86,11 @@ public class AuthService {
     }
 
     public void logout(String refreshToken) {
-        if (!jwtService.isTokenValid(refreshToken)) {
+        if (!tokenVerifier.isTokenValid(refreshToken)) {
             throw new InvalidTokenException();
         }
 
-        String userId = jwtService.extractUserId(refreshToken);
+        String userId = tokenVerifier.extractUserId(refreshToken);
         refreshTokenStore.delete(userId);
     }
 }

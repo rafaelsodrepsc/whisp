@@ -1,7 +1,5 @@
 package com.whisp.chat.config;
 
-import com.whisp.common.security.JwtService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;

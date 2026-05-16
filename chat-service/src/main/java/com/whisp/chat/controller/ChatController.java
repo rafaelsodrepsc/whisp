@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -20,10 +21,10 @@ import java.util.UUID;
 public class ChatController {
 
     private final MessagePublisher messagePublisher;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/chat/{roomId}")
-    @SendTo("/topic/chat/{roomId}")
-    public ChatMessage sendMessage(ChatMessage message, Principal principal) {
+    public void sendMessage(ChatMessage message, Principal principal) {
         message.setSenderId(principal.getName());
 
         MessageEvent event = new MessageEvent(
@@ -37,6 +38,10 @@ public class ChatController {
         );
 
         messagePublisher.publish("chat.messages", event);
-        return message;
+
+        messagingTemplate.convertAndSend(
+                "/topic/chat/" + message.getRoomId(),
+                message
+        );
     }
 }

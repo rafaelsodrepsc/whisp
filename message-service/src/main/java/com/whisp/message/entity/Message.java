@@ -2,19 +2,21 @@ package com.whisp.message.entity;
 
 import com.whisp.common.event.MessageStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "whisp_message")
-@Data
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Message {
     @Id
+    @EqualsAndHashCode.Include
     private String id;
 
     @Column

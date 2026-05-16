@@ -10,7 +10,6 @@ import com.whisp.auth.exception.UserNotFoundException;
 import com.whisp.auth.exception.UsernameAlreadyExistsException;
 import com.whisp.auth.model.User;
 import com.whisp.auth.repository.UserRepository;
-import com.whisp.common.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

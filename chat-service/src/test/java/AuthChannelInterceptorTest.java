@@ -1,5 +1,4 @@
 import com.whisp.chat.config.AuthChannelInterceptor;
-import com.whisp.common.security.JwtService;
 import org.springframework.messaging.Message;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,6 +1,6 @@
 package com.whisp.chat.config;
 
-import com.whisp.common.security.JwtService;
+import com.whisp.common.security.TokenVerifier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuthChannelInterceptor implements ChannelInterceptor {
 
-    private final JwtService jwtService;
+    private final TokenVerifier tokenVerifier;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -34,11 +34,11 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
 
             String token = authHeader.substring(7);
 
-            if (!jwtService.isTokenValid(token)) {
+            if (!tokenVerifier.isTokenValid(token)) {
                 throw new MessagingException("Token inválido ou expirado");
             }
 
-            String userId = jwtService.extractUserId(token);
+            String userId = tokenVerifier.extractUserId(token);
 
             // registra o usuário autenticado na sessão STOMP
             accessor.setUser(new StompPrincipal(userId));

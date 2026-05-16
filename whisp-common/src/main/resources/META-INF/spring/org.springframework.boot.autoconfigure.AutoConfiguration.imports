@@ -1,1 +1,2 @@
-com.whisp.common.security.JwtService
+com.whisp.common.security.TokenVerifier
+com.whisp.common.security.TokenIssuer
