@@ -1,0 +1,25 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: message-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/whisp_message
+    username: seu_usuario
+    password: sua_senha
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+jwt:
+  secret: seu_secret_base64_aqui
