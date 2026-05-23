@@ -1,10 +1,11 @@
 import com.whisp.chat.config.AuthChannelInterceptor;
-import org.springframework.messaging.Message;
+import com.whisp.common.security.TokenVerifier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -20,7 +21,7 @@ import static org.mockito.Mockito.when;
 class AuthChannelInterceptorTest {
 
     @Mock
-    private JwtService jwtService;
+    private TokenVerifier tokenVerifier;
 
     @InjectMocks
     private AuthChannelInterceptor interceptor;
@@ -40,8 +41,8 @@ class AuthChannelInterceptorTest {
 
     @Test
     void shouldAllowWhenTokenIsValid() {
-        when(jwtService.isTokenValid("valid-token")).thenReturn(true);
-        when(jwtService.extractUserId("valid-token")).thenReturn("user-123");
+        when(tokenVerifier.isTokenValid("valid-token")).thenReturn(true);
+        when(tokenVerifier.extractUserId("valid-token")).thenReturn("user-123");
 
         Message<?> message = buildConnectMessage("Bearer valid-token");
 
@@ -63,7 +64,7 @@ class AuthChannelInterceptorTest {
 
     @Test
     void shouldRejectWhenTokenIsInvalid() {
-        when(jwtService.isTokenValid("invalid-token")).thenReturn(false);
+        when(tokenVerifier.isTokenValid("invalid-token")).thenReturn(false);
 
         Message<?> message = buildConnectMessage("Bearer invalid-token");
 
