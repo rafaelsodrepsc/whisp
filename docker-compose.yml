@@ -37,7 +37,6 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      # Dentro do Docker os serviços se falam pelo nome do container, não localhost
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
@@ -81,10 +80,15 @@ services:
     ports:
       - "8082:8082"
     environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/whisp_chat
+      SPRING_DATASOURCE_USERNAME: whisp
+      SPRING_DATASOURCE_PASSWORD: whisp123
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: 900000
     depends_on:
+      postgres:
+        condition: service_healthy
       kafka:
         condition: service_healthy
       auth-service:
