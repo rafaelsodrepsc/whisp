@@ -10,6 +10,8 @@ import com.whisp.auth.exception.UserNotFoundException;
 import com.whisp.auth.exception.UsernameAlreadyExistsException;
 import com.whisp.auth.model.User;
 import com.whisp.auth.repository.UserRepository;
+import com.whisp.common.security.TokenIssuer;
+import com.whisp.common.security.TokenVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +37,10 @@ class AuthServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
-    private JwtService jwtService;
+    private TokenVerifier tokenVerifier;
+
+    @Mock
+    private TokenIssuer tokenIssuer;
 
     @Mock
     private RefreshTokenStore refreshTokenStore;
@@ -103,8 +108,8 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(request.getPassword(), user.getPasswordHash())).thenReturn(true);
-        when(jwtService.generateAccessToken(user.getId(), user.getEmail())).thenReturn("access-token");
-        when(jwtService.generateRefreshToken(user.getId(), user.getEmail())).thenReturn("refresh-token");
+        when(tokenIssuer.generateAccessToken(user.getId(), user.getEmail())).thenReturn("access-token");
+        when(tokenIssuer.generateRefreshToken(user.getId(), user.getEmail())).thenReturn("refresh-token");
 
         AuthResponse response = authService.login(request);
 
@@ -140,12 +145,12 @@ class AuthServiceTest {
     void shouldRefreshSuccessfully() {
         String refreshToken = "valid-refresh-token";
 
-        when(jwtService.isTokenValid(refreshToken)).thenReturn(true);
-        when(jwtService.extractUserId(refreshToken)).thenReturn(user.getId());
+        when(tokenVerifier.isTokenValid(refreshToken)).thenReturn(true);
+        when(tokenVerifier.extractUserId(refreshToken)).thenReturn(user.getId());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(refreshTokenStore.find(user.getId())).thenReturn(Optional.of(refreshToken));
-        when(jwtService.generateAccessToken(user.getId(), user.getEmail())).thenReturn("new-access-token");
-        when(jwtService.generateRefreshToken(user.getId(), user.getEmail())).thenReturn("new-refresh-token");
+        when(tokenIssuer.generateAccessToken(user.getId(), user.getEmail())).thenReturn("new-access-token");
+        when(tokenIssuer.generateRefreshToken(user.getId(), user.getEmail())).thenReturn("new-refresh-token");
 
         AuthResponse response = authService.refresh(refreshToken);
 
@@ -156,7 +161,7 @@ class AuthServiceTest {
 
     @Test
     void shouldThrowWhenRefreshTokenIsInvalid() {
-        when(jwtService.isTokenValid("invalid-token")).thenReturn(false);
+        when(tokenVerifier.isTokenValid("invalid-token")).thenReturn(false);
 
         assertThatThrownBy(() -> authService.refresh("invalid-token"))
                 .isInstanceOf(InvalidTokenException.class);
@@ -166,12 +171,11 @@ class AuthServiceTest {
     void shouldThrowWhenRefreshTokenNotFoundInRedis() {
         String refreshToken = "valid-refresh-token";
 
-        when(jwtService.isTokenValid(refreshToken)).thenReturn(true);
-        when(jwtService.extractUserId(refreshToken)).thenReturn(user.getId());
+        when(tokenVerifier.isTokenValid(refreshToken)).thenReturn(true);
+        when(tokenVerifier.extractUserId(refreshToken)).thenReturn(user.getId());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(refreshTokenStore.find(user.getId())).thenReturn(Optional.empty());
 
-        // token válido pelo JWT mas não existe no Redis — já foi usado ou expirou
         assertThatThrownBy(() -> authService.refresh(refreshToken))
                 .isInstanceOf(InvalidTokenException.class);
     }
@@ -180,11 +184,35 @@ class AuthServiceTest {
     void shouldThrowWhenUserNotFoundOnRefresh() {
         String refreshToken = "valid-refresh-token";
 
-        when(jwtService.isTokenValid(refreshToken)).thenReturn(true);
-        when(jwtService.extractUserId(refreshToken)).thenReturn("ghost-user-id");
+        when(tokenVerifier.isTokenValid(refreshToken)).thenReturn(true);
+        when(tokenVerifier.extractUserId(refreshToken)).thenReturn("ghost-user-id");
         when(userRepository.findById("ghost-user-id")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> authService.refresh(refreshToken))
                 .isInstanceOf(UserNotFoundException.class);
+    }
+
+    // --- logout ---
+
+    @Test
+    void shouldLogoutSuccessfully() {
+        String refreshToken = "valid-refresh-token";
+
+        when(tokenVerifier.isTokenValid(refreshToken)).thenReturn(true);
+        when(tokenVerifier.extractUserId(refreshToken)).thenReturn(user.getId());
+
+        authService.logout(refreshToken);
+
+        verify(refreshTokenStore, times(1)).delete(user.getId());
+    }
+
+    @Test
+    void shouldThrowWhenLogoutWithInvalidToken() {
+        when(tokenVerifier.isTokenValid("invalid-token")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.logout("invalid-token"))
+                .isInstanceOf(InvalidTokenException.class);
+
+        verify(refreshTokenStore, never()).delete(any());
     }
 }
