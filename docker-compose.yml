@@ -60,11 +60,14 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/whisp_auth
       SPRING_DATASOURCE_USERNAME: whisp
       SPRING_DATASOURCE_PASSWORD: whisp123
+      SPRING_DATA_REDIS_HOST: redis
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: 900000
       JWT_REFRESH_EXPIRATION: 604800000
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
@@ -86,6 +89,7 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: 900000
+      JWT_REFRESH_EXPIRATION: 604800000
     depends_on:
       postgres:
         condition: service_healthy
