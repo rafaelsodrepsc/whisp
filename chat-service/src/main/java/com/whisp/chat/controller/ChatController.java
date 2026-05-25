@@ -7,6 +7,7 @@ import com.whisp.common.event.MessageEvent;
 import com.whisp.common.event.MessageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,7 +27,11 @@ public class ChatController {
 
     @MessageMapping("/chat/{roomId}")
     public void sendMessage(ChatMessage message, Principal principal) {
-        StompPrincipal stompPrincipal = (StompPrincipal) principal;
+        if (!(principal instanceof StompPrincipal stompPrincipal)) {
+            log.warn("sendMessage called with unexpected principal type: {}",
+                    principal != null ? principal.getClass().getName() : "null");
+            throw new MessagingException("Unauthorized");
+        }
 
         MessageEvent event = new MessageEvent(
                 UUID.randomUUID().toString(),
