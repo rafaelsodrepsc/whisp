@@ -47,8 +47,8 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        String accessToken = tokenIssuer.generateAccessToken(user.getId(), user.getEmail());
-        String refreshToken = tokenIssuer.generateRefreshToken(user.getId(), user.getEmail());
+        String accessToken = tokenIssuer.generateAccessToken(user.getId(), user.getEmail(), user.getUsername());
+        String refreshToken = tokenIssuer.generateRefreshToken(user.getId(), user.getEmail(), user.getUsername());
 
         // salva o refresh token no Redis com TTL de 7 dias
         refreshTokenStore.save(user.getId(), refreshToken);
@@ -76,8 +76,8 @@ public class AuthService {
             throw new InvalidTokenException();
         }
 
-        String newAccessToken = tokenIssuer.generateAccessToken(user.getId(), user.getEmail());
-        String newRefreshToken = tokenIssuer.generateRefreshToken(user.getId(), user.getEmail());
+        String newAccessToken = tokenIssuer.generateAccessToken(user.getId(), user.getEmail(), user.getUsername());
+        String newRefreshToken = tokenIssuer.generateRefreshToken(user.getId(), user.getEmail(), user.getUsername());
 
         // rotaciona, deleta o antigo, salva o novo
         refreshTokenStore.save(userId, newRefreshToken);

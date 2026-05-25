@@ -108,8 +108,8 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail(request.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(request.getPassword(), user.getPasswordHash())).thenReturn(true);
-        when(tokenIssuer.generateAccessToken(user.getId(), user.getEmail())).thenReturn("access-token");
-        when(tokenIssuer.generateRefreshToken(user.getId(), user.getEmail())).thenReturn("refresh-token");
+        when(tokenIssuer.generateAccessToken(user.getId(), user.getEmail(), user.getUsername())).thenReturn("access-token");
+        when(tokenIssuer.generateRefreshToken(user.getId(), user.getEmail(), user.getUsername())).thenReturn("refresh-token");
 
         AuthResponse response = authService.login(request);
 
@@ -149,8 +149,8 @@ class AuthServiceTest {
         when(tokenVerifier.extractUserId(refreshToken)).thenReturn(user.getId());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(refreshTokenStore.find(user.getId())).thenReturn(Optional.of(refreshToken));
-        when(tokenIssuer.generateAccessToken(user.getId(), user.getEmail())).thenReturn("new-access-token");
-        when(tokenIssuer.generateRefreshToken(user.getId(), user.getEmail())).thenReturn("new-refresh-token");
+        when(tokenIssuer.generateAccessToken(user.getId(), user.getEmail(), user.getUsername())).thenReturn("new-access-token");
+        when(tokenIssuer.generateRefreshToken(user.getId(), user.getEmail(), user.getUsername())).thenReturn("new-refresh-token");
 
         AuthResponse response = authService.refresh(refreshToken);
 
