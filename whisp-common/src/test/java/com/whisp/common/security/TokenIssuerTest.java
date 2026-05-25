@@ -32,7 +32,7 @@ class TokenIssuerTest {
 
     @Test
     void shouldGenerateAccessTokenWithCorrectSubject() {
-        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
 
         TokenVerifier verifier = buildVerifier();
         Claims claims = verifier.extractClaims(token);
@@ -42,7 +42,7 @@ class TokenIssuerTest {
 
     @Test
     void shouldGenerateAccessTokenWithEmailClaim() {
-        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
 
         TokenVerifier verifier = buildVerifier();
         Claims claims = verifier.extractClaims(token);
@@ -52,7 +52,7 @@ class TokenIssuerTest {
 
     @Test
     void shouldGenerateAccessTokenWithFutureExpiration() {
-        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
 
         TokenVerifier verifier = buildVerifier();
         Claims claims = verifier.extractClaims(token);
@@ -62,7 +62,7 @@ class TokenIssuerTest {
 
     @Test
     void shouldGenerateRefreshTokenWithCorrectSubject() {
-        String token = tokenIssuer.generateRefreshToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateRefreshToken(USER_ID, EMAIL,"testuser");
 
         TokenVerifier verifier = buildVerifier();
         Claims claims = verifier.extractClaims(token);
@@ -72,8 +72,8 @@ class TokenIssuerTest {
 
     @Test
     void shouldGenerateRefreshTokenWithLongerExpirationThanAccessToken() {
-        String accessToken = tokenIssuer.generateAccessToken(USER_ID, EMAIL);
-        String refreshToken = tokenIssuer.generateRefreshToken(USER_ID, EMAIL);
+        String accessToken = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
+        String refreshToken = tokenIssuer.generateRefreshToken(USER_ID, EMAIL,"testuser");
 
         TokenVerifier verifier = buildVerifier();
         Date accessExpiration = verifier.extractClaims(accessToken).getExpiration();

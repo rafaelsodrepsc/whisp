@@ -11,7 +11,7 @@ import java.util.Base64;
 import java.util.Date;
 
 @Service
-@ConditionalOnProperty(name = "jwt.secret")
+@ConditionalOnProperty(name = {"jwt.secret", "jwt.expiration"})
 public class TokenIssuer {
 
     @Value("${jwt.secret}")
@@ -31,21 +31,22 @@ public class TokenIssuer {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private String buildToken(String userId, String email, long expirationTime) {
+    private String buildToken(String userId, String email, String username, long expirationTime) {
         return Jwts.builder()
                 .subject(userId)
                 .claim("email", email)
+                .claim("username", username)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(signingKey())
                 .compact();
     }
 
-    public String generateAccessToken(String userId, String email) {
-        return buildToken(userId, email, expiration);
+    public String generateAccessToken(String userId, String email, String username) {
+        return buildToken(userId, email, username, expiration);
     }
 
-    public String generateRefreshToken(String userId, String email) {
-        return buildToken(userId, email, refreshExpiration);
+    public String generateRefreshToken(String userId, String email, String username) {
+        return buildToken(userId, email, username, refreshExpiration);
     }
 }

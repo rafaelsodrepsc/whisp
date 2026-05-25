@@ -34,6 +34,10 @@ public class TokenVerifier {
                 .getPayload();
     }
 
+    public String extractUsername(String token) {
+        return extractClaims(token).get("username", String.class);
+    }
+
     public String extractUserId(String token) {
         return extractClaims(token).getSubject();
     }

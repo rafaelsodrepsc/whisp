@@ -32,7 +32,7 @@ class TokenVerifierTest {
 
     @Test
     void shouldReturnTrueForValidToken() {
-        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
 
         assertThat(tokenVerifier.isTokenValid(token)).isTrue();
     }
@@ -40,14 +40,14 @@ class TokenVerifierTest {
     @Test
     void shouldReturnFalseForExpiredToken() {
         ReflectionTestUtils.setField(tokenIssuer, "expiration", -1000L);
-        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
 
         assertThat(tokenVerifier.isTokenValid(token)).isFalse();
     }
 
     @Test
     void shouldReturnFalseForTamperedToken() {
-        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
         String tampered = token + "invalido";
 
         assertThat(tokenVerifier.isTokenValid(tampered)).isFalse();
@@ -60,14 +60,14 @@ class TokenVerifierTest {
 
     @Test
     void shouldExtractCorrectUserId() {
-        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
 
         assertThat(tokenVerifier.extractUserId(token)).isEqualTo(USER_ID);
     }
 
     @Test
     void shouldExtractCorrectUserIdFromRefreshToken() {
-        String token = tokenIssuer.generateRefreshToken(USER_ID, EMAIL);
+        String token = tokenIssuer.generateRefreshToken(USER_ID, EMAIL,"testuser");
 
         assertThat(tokenVerifier.extractUserId(token)).isEqualTo(USER_ID);
     }

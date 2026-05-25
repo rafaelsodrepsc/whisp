@@ -6,6 +6,7 @@ public record MessageEvent(
         String id,
         String roomId,
         String senderId,
+        String senderUsername,
         String content,
         MessageStatus status,
         Instant sentAt,
