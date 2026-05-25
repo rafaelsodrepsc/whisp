@@ -37,3 +37,9 @@ build/
 application-local.yaml
 
 **/application.yaml
+
+### Angular ###
+whisp-web/node_modules/
+whisp-web/dist/
+whisp-web/.angular/
+whisp-web/.env
