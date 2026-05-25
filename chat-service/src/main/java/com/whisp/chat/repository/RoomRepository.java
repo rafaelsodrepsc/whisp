@@ -13,4 +13,5 @@ public interface RoomRepository extends JpaRepository<Room, String> {
 
     @Query("SELECT r FROM Room r JOIN r.members m WHERE m.userId = :userId")
     List<Room> findAllByMemberUserId(@Param("userId") String userId);
+    List<Room> findAll();
 }

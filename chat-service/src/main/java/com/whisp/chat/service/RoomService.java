@@ -67,4 +67,12 @@ public class RoomService {
 
         roomMemberRepository.save(member);
     }
+
+    @Transactional(readOnly = true)
+    public List<RoomResponse> listAll() {
+        return roomRepository.findAll()
+                .stream()
+                .map(RoomResponse::from)
+                .toList();
+    }
 }

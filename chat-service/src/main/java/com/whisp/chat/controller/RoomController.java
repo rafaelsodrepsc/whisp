@@ -38,4 +38,9 @@ public class RoomController {
         roomService.join(roomId, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<RoomResponse>> listAll() {
+        return ResponseEntity.ok(roomService.listAll());
+    }
 }

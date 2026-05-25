@@ -1,5 +1,6 @@
 package com.whisp.chat.controller;
 
+import com.whisp.chat.config.StompPrincipal;
 import com.whisp.chat.dto.ChatMessage;
 import com.whisp.chat.messaging.MessagePublisher;
 import com.whisp.common.event.MessageEvent;
@@ -25,12 +26,13 @@ public class ChatController {
 
     @MessageMapping("/chat/{roomId}")
     public void sendMessage(ChatMessage message, Principal principal) {
-        message.setSenderId(principal.getName());
+        StompPrincipal stompPrincipal = (StompPrincipal) principal;
 
         MessageEvent event = new MessageEvent(
                 UUID.randomUUID().toString(),
                 message.getRoomId(),
-                principal.getName(),
+                stompPrincipal.getName(),
+                stompPrincipal.username(),
                 message.getContent(),
                 MessageStatus.SENT,
                 Instant.now(),
@@ -41,7 +43,7 @@ public class ChatController {
 
         messagingTemplate.convertAndSend(
                 "/topic/chat/" + message.getRoomId(),
-                message
+                event
         );
     }
 }

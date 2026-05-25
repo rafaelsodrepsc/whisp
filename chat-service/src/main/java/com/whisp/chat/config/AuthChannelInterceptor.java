@@ -39,9 +39,8 @@ public class AuthChannelInterceptor implements ChannelInterceptor {
             }
 
             String userId = tokenVerifier.extractUserId(token);
-
-            // registra o usuário autenticado na sessão STOMP
-            accessor.setUser(new StompPrincipal(userId));
+            String username = tokenVerifier.extractUsername(token);
+            accessor.setUser(new StompPrincipal(userId, username));
         }
 
         return message;
