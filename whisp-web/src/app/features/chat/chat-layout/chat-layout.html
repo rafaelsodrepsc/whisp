@@ -1,0 +1,16 @@
+<div class="flex h-screen bg-gray-950 text-white overflow-hidden">
+  <app-sidebar
+    [rooms]="rooms()"
+    [allRooms]="allRooms()"
+    [activeRoomId]="activeRoomId()"
+    (roomSelected)="onRoomSelected($event)"
+    (roomCreated)="onRoomCreated($event)"
+    (roomJoined)="onRoomJoined($event)"
+  />
+  <app-message-area
+    [room]="activeRoom()"
+    [messages]="chatService.messages()"
+    [currentUserId]="currentUserId"
+    (messageSent)="onMessageSent($event)"
+  />
+</div>

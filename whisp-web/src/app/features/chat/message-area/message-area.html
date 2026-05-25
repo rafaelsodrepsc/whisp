@@ -1,0 +1,72 @@
+<div class="flex-1 flex flex-col bg-gray-950">
+
+  @if (!room) {
+    <div class="flex-1 flex items-center justify-center">
+      <div class="text-center">
+        <p class="text-4xl mb-3">💬</p>
+        <p class="text-gray-500 text-sm">Selecione uma sala para começar</p>
+      </div>
+    </div>
+  } @else {
+
+    <div class="px-6 py-4 border-b border-gray-800 bg-gray-900 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold">
+        {{ room.name.charAt(0).toUpperCase() }}
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-white">{{ room.name }}</p>
+        <p class="text-xs text-gray-500">{{ room.memberCount }} membros</p>
+      </div>
+    </div>
+
+    <div #scrollContainer class="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-1">
+      @for (msg of messages; track msg.id) {
+        <div class="flex flex-col"
+             [class.items-end]="msg.senderId === currentUserId"
+             [class.items-start]="msg.senderId !== currentUserId">
+
+          @if (msg.senderId !== currentUserId) {
+            <span class="text-xs text-indigo-400 px-1 mb-1">{{ msg.senderUsername }}</span>
+          }
+
+          <div
+            class="max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm break-words"
+            [class.bg-indigo-600]="msg.senderId === currentUserId"
+            [class.text-white]="msg.senderId === currentUserId"
+            [class.bg-gray-800]="msg.senderId !== currentUserId"
+            [class.text-gray-100]="msg.senderId !== currentUserId"
+            [class.rounded-br-sm]="msg.senderId === currentUserId"
+            [class.rounded-bl-sm]="msg.senderId !== currentUserId">
+            <span class="block">{{ msg.content }}</span>
+          </div>
+
+          <span class="text-xs text-gray-600 mt-1 px-1">
+      {{ msg.sentAt | date:'HH:mm' }}
+    </span>
+        </div>
+      }
+    </div>
+
+    <div class="px-4 py-3 border-t border-gray-800 bg-gray-900">
+      <div class="flex items-center gap-3 bg-gray-800 rounded-full px-4 py-2">
+        <input
+          type="text"
+          [(ngModel)]="content"
+          (keydown.enter)="send()"
+          placeholder="Digite uma mensagem"
+          class="flex-1 bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none"
+        />
+        <button
+          (click)="send()"
+          [disabled]="!content.trim()"
+          class="text-indigo-400 hover:text-indigo-300 disabled:opacity-30 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 rotate-90" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  }
+
+</div>

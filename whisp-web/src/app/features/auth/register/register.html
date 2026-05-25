@@ -1,0 +1,65 @@
+<div class="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+  <div class="w-full max-w-sm">
+
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-white tracking-tight">whisp</h1>
+      <p class="text-gray-400 text-sm mt-1">crie sua conta</p>
+    </div>
+
+    <div class="bg-gray-900 rounded-2xl p-6 shadow-xl border border-gray-800">
+      <form (ngSubmit)="onSubmit()">
+
+        <div class="mb-4">
+          <label class="block text-sm text-gray-400 mb-1">Username</label>
+          <input
+            type="text"
+            [(ngModel)]="username"
+            name="username"
+            placeholder="seu_username"
+            class="w-full bg-gray-800 text-white rounded-lg px-4 py-2.5 text-sm border border-gray-700 focus:outline-none focus:border-indigo-500 transition"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm text-gray-400 mb-1">Email</label>
+          <input
+            type="email"
+            [(ngModel)]="email"
+            name="email"
+            placeholder="seu@email.com"
+            class="w-full bg-gray-800 text-white rounded-lg px-4 py-2.5 text-sm border border-gray-700 focus:outline-none focus:border-indigo-500 transition"
+          />
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm text-gray-400 mb-1">Senha</label>
+          <input
+            type="password"
+            [(ngModel)]="password"
+            name="password"
+            placeholder="••••••••"
+            class="w-full bg-gray-800 text-white rounded-lg px-4 py-2.5 text-sm border border-gray-700 focus:outline-none focus:border-indigo-500 transition"
+          />
+        </div>
+
+        @if (error()) {
+          <p class="text-red-400 text-sm mb-4">{{ error() }}</p>
+        }
+
+        <button
+          type="submit"
+          [disabled]="loading()"
+          class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-medium rounded-lg py-2.5 text-sm transition">
+          {{ loading() ? 'Criando conta...' : 'Criar conta' }}
+        </button>
+
+      </form>
+    </div>
+
+    <p class="text-center text-gray-500 text-sm mt-4">
+      Já tem conta?
+      <a routerLink="/login" class="text-indigo-400 hover:text-indigo-300">Entrar</a>
+    </p>
+
+  </div>
+</div>

@@ -1,0 +1,81 @@
+<div class="w-72 bg-gray-900 border-r border-gray-800 flex flex-col">
+
+  <div class="p-4 border-b border-gray-800 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-white tracking-tight">whisp</h1>
+    <button
+      (click)="logout()"
+      class="text-gray-400 hover:text-white text-xs transition">
+      sair
+    </button>
+  </div>
+
+  <div class="p-3 border-b border-gray-800">
+    @if (!showInput()) {
+      <button
+        (click)="showInput.set(true)"
+        class="w-full flex items-center gap-2 text-sm text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-lg px-3 py-2 transition">
+        <span class="text-lg leading-none">+</span>
+        Nova sala
+      </button>
+    } @else {
+      <div class="flex gap-2">
+        <input
+          #roomInput
+          type="text"
+          [(ngModel)]="newRoomName"
+          (keydown.enter)="createRoom()"
+          (keydown.escape)="cancelCreate()"
+          placeholder="Nome da sala"
+          class="flex-1 bg-gray-800 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 focus:outline-none focus:border-indigo-500 transition"
+        />
+        <button
+          (click)="createRoom()"
+          class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm rounded-lg px-3 transition">
+          ok
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="flex-1 overflow-y-auto">
+    @for (room of rooms; track room.id) {
+      <button
+        (click)="roomSelected.emit(room.id)"
+        class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-800 transition text-left"
+        [class.bg-gray-800]="room.id === activeRoomId">
+        <div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold shrink-0">
+          {{ room.name.charAt(0).toUpperCase() }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-white truncate">{{ room.name }}</p>
+          <p class="text-xs text-gray-500">{{ room.memberCount }} membros</p>
+        </div>
+      </button>
+    } @empty {
+      <p class="text-center text-gray-600 text-sm mt-8">Nenhuma sala ainda</p>
+    }
+  </div>
+
+  @if (otherRooms.length > 0) {
+    <div class="px-4 py-2 border-t border-gray-800">
+      <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Outras salas</p>
+      @for (room of otherRooms; track room.id) {
+        <div class="flex items-center gap-3 px-0 py-2">
+          <div class="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-sm font-semibold shrink-0">
+            {{ room.name.charAt(0).toUpperCase() }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-white truncate">{{ room.name }}</p>
+            <p class="text-xs text-gray-500">{{ room.memberCount }} membros</p>
+          </div>
+          <button
+            (click)="roomJoined.emit(room.id)"
+            class="text-xs text-indigo-400 hover:text-indigo-300 transition shrink-0">
+            entrar
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+</div>
