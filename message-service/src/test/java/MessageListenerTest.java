@@ -1,9 +1,8 @@
-package com.whisp.message.listener;
-
 import com.whisp.common.event.DlqEvent;
 import com.whisp.common.event.MessageEvent;
 import com.whisp.common.event.MessageStatus;
 import com.whisp.message.entity.Message;
+import com.whisp.message.listener.MessageListener;
 import com.whisp.message.repository.MessageRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,11 +36,11 @@ class MessageListenerTest {
                 "msg-123",
                 "room-456",
                 "user-789",
+                "testuser",
                 "Olá, mundo!",
                 MessageStatus.SENT,
                 Instant.now(),
                 UUID.randomUUID().toString()
-
         );
     }
 

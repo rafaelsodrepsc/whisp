@@ -8,6 +8,7 @@ public record MessageResponse(
         String id,
         String roomId,
         String senderId,
+        String senderUsername,
         String content,
         String status,
         Instant sentAt
@@ -17,6 +18,7 @@ public record MessageResponse(
                 message.getId(),
                 message.getRoomId(),
                 message.getSenderId(),
+                message.getSenderUsername(),
                 message.getContent(),
                 message.getStatus().name(),
                 message.getSentAt()

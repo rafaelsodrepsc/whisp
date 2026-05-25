@@ -30,7 +30,7 @@ class MessageServiceTest {
     private MessageService messageService;
 
     private Message buildMessage(String id, String roomId) {
-        return new Message(id, roomId, "user-123", "Olá!", MessageStatus.SENT, Instant.now());
+        return new Message(id, roomId, "user-ID","username", "Olá!", MessageStatus.SENT, Instant.now());
     }
 
     @Test
@@ -67,7 +67,7 @@ class MessageServiceTest {
     @Test
     void shouldMapMessageFieldsCorrectly() {
         String roomId = "room-1";
-        Message message = new Message("msg-1", roomId, "user-456", "Teste", MessageStatus.SENT, Instant.now());
+        Message message = new Message("msg-1", roomId, "user-ID","username", "Teste", MessageStatus.SENT, Instant.now());
         Page<Message> page = new PageImpl<>(List.of(message), PageRequest.of(0, 50), 1);
 
         when(messageRepository.findByRoomIdOrderBySentAtAsc(eq(roomId), any())).thenReturn(page);

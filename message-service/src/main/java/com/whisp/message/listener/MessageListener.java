@@ -30,6 +30,7 @@ public class MessageListener {
                     message.id(),
                     message.roomId(),
                     message.senderId(),
+                    message.senderUsername(),
                     message.content(),
                     message.status(),
                     message.sentAt()

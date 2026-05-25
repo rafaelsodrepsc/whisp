@@ -24,11 +24,12 @@ public class Message {
     @Column
     private String senderId;
     @Column
+    private String senderUsername;
+    @Column
     private String content;
     @Column
     @Enumerated(EnumType.STRING)
     private MessageStatus status;
     @Column
     private Instant sentAt;
-
 }
