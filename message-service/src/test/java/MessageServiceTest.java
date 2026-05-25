@@ -75,7 +75,7 @@ class MessageServiceTest {
         MessageResponse response = messageService.findByRoom(roomId, 0, 50).getContent().get(0);
 
         assertThat(response.id()).isEqualTo("msg-1");
-        assertThat(response.senderId()).isEqualTo("user-456");
+        assertThat(response.senderId()).isEqualTo("user-ID");
         assertThat(response.content()).isEqualTo("Teste");
         assertThat(response.status()).isEqualTo("SENT");
     }

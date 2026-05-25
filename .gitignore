@@ -43,3 +43,7 @@ whisp-web/node_modules/
 whisp-web/dist/
 whisp-web/.angular/
 whisp-web/.env
+
+node_modules/
+package-lock.json
+package.json
