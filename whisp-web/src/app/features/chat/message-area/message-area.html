@@ -40,9 +40,13 @@
             <span class="block">{{ msg.content }}</span>
           </div>
 
-          <span class="text-xs text-gray-600 mt-1 px-1">
-      {{ msg.sentAt | date:'HH:mm' }}
-    </span>
+          @if (msg.status === 'FAILED') {
+            <span class="text-xs text-red-400 mt-1 px-1">Falha ao enviar</span>
+          } @else {
+            <span class="text-xs text-gray-600 mt-1 px-1">
+        {{ msg.sentAt | date:'HH:mm' }}
+      </span>
+          }
         </div>
       }
     </div>

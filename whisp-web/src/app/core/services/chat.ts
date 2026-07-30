@@ -18,7 +18,13 @@ export class ChatService {
       onConnect: () => {
         this.client!.subscribe(`/topic/chat/${roomId}`, (frame: IMessage) => {
           const msg: Message = JSON.parse(frame.body);
-          this.messages.update(msgs => [...msgs, msg]);
+          this.messages.update(msgs => {
+            const existingIndex = msgs.findIndex(m => m.id === msg.id);
+            if (existingIndex === -1) {
+              return [...msgs, msg];
+            }
+            return msgs.map((m, i) => (i === existingIndex ? msg : m));
+          });
         });
       },
     });

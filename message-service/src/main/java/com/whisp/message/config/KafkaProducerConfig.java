@@ -3,6 +3,7 @@ package com.whisp.message.config;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import com.whisp.common.event.DlqEvent;
+import com.whisp.common.event.MessageEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,5 +33,19 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, DlqEvent> dlqKafkaTemplate() {
         return new KafkaTemplate<>(dlqProducerFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, MessageEvent> messageEventProducerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, MessageEvent> messageEventKafkaTemplate() {
+        return new KafkaTemplate<>(messageEventProducerFactory());
     }
 }
