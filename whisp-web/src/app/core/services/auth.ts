@@ -30,8 +30,8 @@ export class Auth {
       .pipe(tap(tokens => this.saveTokens(tokens)));
   }
 
-  register(username: string, email: string, password: string): Observable<string> {
-    return this.http.post<string>(`${this.API}/register`, { username, email, password });
+  register(username: string, email: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.API}/register`, { username, email, password });
   }
 
   refresh(): Observable<AuthTokens> {

@@ -2,6 +2,7 @@ package com.whisp.auth.controller;
 
 import com.whisp.auth.dto.AuthResponse;
 import com.whisp.auth.dto.LoginRequest;
+import com.whisp.auth.dto.MessageResponse;
 import com.whisp.auth.dto.RefreshRequest;
 import com.whisp.auth.dto.RegisterRequest;
 import com.whisp.auth.exception.InvalidTokenException;
@@ -28,9 +29,9 @@ public class AuthController {
     private long refreshExpiration;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.ok(new MessageResponse("User registered successfully"));
     }
 
     @PostMapping("/login")
