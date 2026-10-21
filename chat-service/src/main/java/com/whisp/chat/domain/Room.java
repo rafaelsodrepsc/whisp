@@ -2,6 +2,7 @@ package com.whisp.chat.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class Room {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 100)
     @Builder.Default
     private List<RoomMember> members = new ArrayList<>();
 
