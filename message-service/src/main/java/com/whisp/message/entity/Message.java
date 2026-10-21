@@ -25,7 +25,7 @@ public class Message {
     private String senderId;
     @Column
     private String senderUsername;
-    @Column
+    @Column(length = 2000)
     private String content;
     @Column
     @Enumerated(EnumType.STRING)

@@ -18,6 +18,11 @@ public class MessageListener {
     @KafkaListener(topics = "chat.messages", groupId = "message-service")
     public void listen(MessageEvent message) {
         log.info("Consumindo mensagem: {} correlationId: {}", message.id(), message.correlationId());
+        // só insere: save() com id atribuído faz merge e sobrescreveria uma mensagem já persistida
+        if (messageRepository.existsById(message.id())) {
+            log.warn("Mensagem {} já persistida, ignorando duplicata", message.id());
+            return;
+        }
         Message entity = new Message(
                 message.id(),
                 message.roomId(),

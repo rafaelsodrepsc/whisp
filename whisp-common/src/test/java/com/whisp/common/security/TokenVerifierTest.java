@@ -1,12 +1,17 @@
 package com.whisp.common.security;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Base64;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TokenVerifierTest {
 
@@ -70,5 +75,69 @@ class TokenVerifierTest {
         String token = tokenIssuer.generateRefreshToken(USER_ID, EMAIL,"testuser");
 
         assertThat(tokenVerifier.extractUserId(token)).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void shouldAcceptValidSecretAtStartup() {
+        assertThatCode(tokenVerifier::validateSecret).doesNotThrowAnyException();
+    }
+
+    @Test
+    void shouldFailAtStartupWhenSecretIsTooShort() {
+        ReflectionTestUtils.setField(tokenVerifier, "secret",
+                Base64.getEncoder().encodeToString("curto".getBytes()));
+
+        assertThatThrownBy(tokenVerifier::validateSecret).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void shouldFailAtStartupWhenSecretIsEmpty() {
+        ReflectionTestUtils.setField(tokenVerifier, "secret", "");
+
+        assertThatThrownBy(tokenVerifier::validateSecret).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void shouldFailAtStartupWhenSecretIsNotBase64() {
+        ReflectionTestUtils.setField(tokenVerifier, "secret", "seu_secret_base64_aqui");
+
+        assertThatThrownBy(tokenVerifier::validateSecret).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldAcceptAccessTokenOnlyAsAccessToken() {
+        String token = tokenIssuer.generateAccessToken(USER_ID, EMAIL, "testuser");
+
+        assertThat(tokenVerifier.isAccessTokenValid(token)).isTrue();
+        assertThat(tokenVerifier.isRefreshTokenValid(token)).isFalse();
+    }
+
+    @Test
+    void shouldAcceptRefreshTokenOnlyAsRefreshToken() {
+        String token = tokenIssuer.generateRefreshToken(USER_ID, EMAIL, "testuser");
+
+        assertThat(tokenVerifier.isRefreshTokenValid(token)).isTrue();
+        assertThat(tokenVerifier.isAccessTokenValid(token)).isFalse();
+    }
+
+    @Test
+    void shouldRejectExpiredTokenEvenWithCorrectRole() {
+        ReflectionTestUtils.setField(tokenIssuer, "refreshExpiration", -1000L);
+        String token = tokenIssuer.generateRefreshToken(USER_ID, EMAIL, "testuser");
+
+        assertThat(tokenVerifier.isRefreshTokenValid(token)).isFalse();
+    }
+
+    @Test
+    void shouldRejectTokenWithoutTokenUseClaim() {
+        String token = Jwts.builder()
+                .subject(USER_ID)
+                .expiration(new Date(System.currentTimeMillis() + 60_000L))
+                .signWith(Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET)))
+                .compact();
+
+        assertThat(tokenVerifier.isTokenValid(token)).isTrue();
+        assertThat(tokenVerifier.isAccessTokenValid(token)).isFalse();
+        assertThat(tokenVerifier.isRefreshTokenValid(token)).isFalse();
     }
 }

@@ -23,10 +23,18 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class AuthController {
 
+    // o path precisa cobrir /auth/refresh e /auth/logout, senão o logout não recebe o cookie
+    private static final String REFRESH_COOKIE_PATH = "/auth";
+    private static final String LEGACY_REFRESH_COOKIE_PATH = "/auth/refresh";
+
     private final AuthService authService;
 
     @Value("${jwt.refresh-expiration}")
     private long refreshExpiration;
+
+    // true por padrão; só desligue em desenvolvimento local sem HTTPS
+    @Value("${auth.cookie.secure:true}")
+    private boolean cookieSecure;
 
     @PostMapping("/register")
     public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -59,32 +67,42 @@ public class AuthController {
     public ResponseEntity<Void> logout(
             @CookieValue(name = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response) {
-        if (refreshToken != null) {
-            authService.logout(refreshToken);
+        try {
+            if (refreshToken != null) {
+                authService.logout(refreshToken);
+            }
+        } finally {
+            // limpa o cookie mesmo se o token estiver expirado ou for inválido
+            clearRefreshCookie(response);
         }
-        clearRefreshCookie(response);
         return ResponseEntity.noContent().build();
     }
 
     private void addRefreshCookie(HttpServletResponse response, String token) {
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", token)
-                .httpOnly(true)
-                .secure(false)
-                .path("/auth/refresh")
-                .maxAge(Duration.ofMillis(refreshExpiration))
-                .sameSite("Strict")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                refreshCookie(token, REFRESH_COOKIE_PATH, Duration.ofMillis(refreshExpiration)).toString());
+        expireLegacyRefreshCookie(response);
     }
 
     private void clearRefreshCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                refreshCookie("", REFRESH_COOKIE_PATH, Duration.ZERO).toString());
+        expireLegacyRefreshCookie(response);
+    }
+
+    // o cookie antigo (Path=/auth/refresh) seria enviado antes do novo e sobrepor-se-ia a ele
+    private void expireLegacyRefreshCookie(HttpServletResponse response) {
+        response.addHeader(HttpHeaders.SET_COOKIE,
+                refreshCookie("", LEGACY_REFRESH_COOKIE_PATH, Duration.ZERO).toString());
+    }
+
+    private ResponseCookie refreshCookie(String value, String path, Duration maxAge) {
+        return ResponseCookie.from("refresh_token", value)
                 .httpOnly(true)
-                .secure(false)
-                .path("/auth/refresh")
-                .maxAge(0)
+                .secure(cookieSecure)
+                .path(path)
+                .maxAge(maxAge)
                 .sameSite("Strict")
                 .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

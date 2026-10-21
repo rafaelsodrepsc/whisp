@@ -1,0 +1,29 @@
+# Sobreposição para desenvolvimento local: publica a infraestrutura e os serviços só em 127.0.0.1
+# e libera o cookie de refresh em HTTP.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  redis:
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  kafka:
+    ports:
+      - "127.0.0.1:9092:9092"
+
+  auth-service:
+    ports:
+      - "127.0.0.1:8081:8081"
+    environment:
+      AUTH_COOKIE_SECURE: "false"
+
+  chat-service:
+    ports:
+      - "127.0.0.1:8082:8082"
+
+  message-service:
+    ports:
+      - "127.0.0.1:8083:8083"

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { apiConfig } from '../config/api';
 
 export interface Room {
   id: string;
@@ -14,7 +15,7 @@ export interface Room {
   providedIn: 'root',
 })
 export class RoomService {
-  private readonly API = 'http://localhost:8082/rooms';
+  private readonly API = apiConfig.rooms;
 
   constructor(private http: HttpClient) {}
 

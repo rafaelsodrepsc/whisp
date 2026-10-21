@@ -28,6 +28,10 @@ WORKDIR /app
 # curl necessário para o healthcheck do Docker Compose
 RUN apk add --no-cache curl
 
-COPY --from=build /app/message-service/target/*.jar app.jar
+# roda como usuário sem privilégios
+RUN addgroup -S app && adduser -S app -G app
+USER app
+
+COPY --from=build --chown=app:app /app/message-service/target/*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
