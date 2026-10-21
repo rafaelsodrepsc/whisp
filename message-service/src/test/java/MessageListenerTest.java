@@ -1,4 +1,3 @@
-import com.whisp.common.event.DlqEvent;
 import com.whisp.common.event.MessageEvent;
 import com.whisp.common.event.MessageStatus;
 import com.whisp.message.entity.Message;
@@ -9,13 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 
 import java.time.Instant;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -24,9 +21,6 @@ class MessageListenerTest {
 
     @Mock
     private MessageRepository messageRepository;
-
-    @Mock
-    private KafkaTemplate<String, DlqEvent> dlqKafkaTemplate;
 
     @InjectMocks
     private MessageListener messageListener;
@@ -49,20 +43,24 @@ class MessageListenerTest {
         messageListener.listen(buildEvent());
 
         verify(messageRepository, times(1)).save(any(Message.class));
-        verifyNoInteractions(dlqKafkaTemplate);
     }
 
     @Test
-    void shouldSendToDlqWhenRepositoryFails() {
-        doThrow(new RuntimeException("DB unavailable")).when(messageRepository).save(any());
-
-        CompletableFuture<SendResult<String, DlqEvent>> future = new CompletableFuture<>();
-        future.complete(mock(SendResult.class));
-        when(dlqKafkaTemplate.send(anyString(), any(DlqEvent.class))).thenReturn(future);
+    void shouldIgnoreEventWhenMessageIdAlreadyExists() {
+        when(messageRepository.existsById("msg-123")).thenReturn(true);
 
         messageListener.listen(buildEvent());
 
-        verify(messageRepository, times(1)).save(any(Message.class));
-        verify(dlqKafkaTemplate, times(1)).send(eq("chat.messages.dlq"), any(DlqEvent.class));
+        verify(messageRepository, never()).save(any(Message.class));
+    }
+
+    // o retry e o envio ao DLQ são do DefaultErrorHandler do container, então o listener não pode engolir o erro
+    @Test
+    void shouldPropagateFailureSoTheErrorHandlerCanRetryAndDeadLetter() {
+        doThrow(new RuntimeException("DB unavailable")).when(messageRepository).save(any());
+
+        assertThatThrownBy(() -> messageListener.listen(buildEvent()))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("DB unavailable");
     }
 }

@@ -1,12 +1,13 @@
 package com.whisp.message.listener;
 
-import com.whisp.common.event.DlqEvent;
 import com.whisp.common.event.MessageEvent;
 import com.whisp.common.event.MessageStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -22,11 +23,12 @@ public class DlqListener {
             topics = "chat.messages.dlq",
             groupId = "message-service-dlq",
             containerFactory = "dlqKafkaListenerContainerFactory")
-    public void listen(DlqEvent dlqEvent) {
+    // o DeadLetterPublishingRecoverer republica o próprio MessageEvent; o motivo vem nos headers
+    public void listen(MessageEvent original,
+                       @Header(name = KafkaHeaders.DLT_EXCEPTION_MESSAGE, required = false) String reason) {
         log.error("Mensagem descartada apos falha definitiva. messageId={} correlationId={} reason={}",
-                dlqEvent.originalMessageId(), dlqEvent.correlationId(), dlqEvent.reason());
+                original.id(), original.correlationId(), reason);
 
-        MessageEvent original = dlqEvent.originalMessage();
         MessageEvent failedEvent = new MessageEvent(
                 original.id(),
                 original.roomId(),

@@ -7,6 +7,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -42,12 +43,14 @@ public class KafkaConsumerConfig {
             KafkaTemplate<String, DlqEvent> dlqKafkaTemplate) {
 
         ExponentialBackOff backOff = new ExponentialBackOff(1_000L, 2.0);
-        backOff.setMaxElapsedTime(30_000L); // 3 tentativas: 1s, 2s, 4s
+        backOff.setMaxElapsedTime(30_000L); // 5 tentativas: 1s, 2s, 4s, 8s, 16s (31s por registro)
 
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(dlqKafkaTemplate,
                 (record, ex) -> new org.apache.kafka.common.TopicPartition("chat.messages.dlq", 0));
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, backOff);
+        // falha determinística de dados não melhora com retry e bloquearia a partição por 31s
+        errorHandler.addNotRetryableExceptions(DataIntegrityViolationException.class);
 
         ConcurrentKafkaListenerContainerFactory<String, MessageEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
