@@ -9,6 +9,7 @@ import java.util.Base64;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TokenIssuerTest {
 
@@ -80,6 +81,35 @@ class TokenIssuerTest {
         Date refreshExpiration = verifier.extractClaims(refreshToken).getExpiration();
 
         assertThat(refreshExpiration).isAfter(accessExpiration);
+    }
+
+    @Test
+    void shouldFailAtStartupWhenSecretIsTooShort() {
+        ReflectionTestUtils.setField(tokenIssuer, "secret",
+                Base64.getEncoder().encodeToString("curto".getBytes()));
+
+        assertThatThrownBy(tokenIssuer::validateSecret).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void shouldIssueDistinctTokensEvenWithinTheSameSecond() {
+        String first = tokenIssuer.generateRefreshToken(USER_ID, EMAIL,"testuser");
+        String second = tokenIssuer.generateRefreshToken(USER_ID, EMAIL,"testuser");
+
+        assertThat(first).isNotEqualTo(second);
+    }
+
+    @Test
+    void shouldMarkEachTokenWithItsRole() {
+        TokenVerifier verifier = buildVerifier();
+
+        String accessToken = tokenIssuer.generateAccessToken(USER_ID, EMAIL,"testuser");
+        String refreshToken = tokenIssuer.generateRefreshToken(USER_ID, EMAIL,"testuser");
+
+        assertThat(verifier.extractClaims(accessToken).get(TokenIssuer.TOKEN_USE_CLAIM, String.class))
+                .isEqualTo(TokenIssuer.ACCESS_USE);
+        assertThat(verifier.extractClaims(refreshToken).get(TokenIssuer.TOKEN_USE_CLAIM, String.class))
+                .isEqualTo(TokenIssuer.REFRESH_USE);
     }
 
     // TokenVerifier como colaborador para inspecionar o token gerado

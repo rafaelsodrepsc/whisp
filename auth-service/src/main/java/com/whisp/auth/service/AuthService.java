@@ -57,7 +57,7 @@ public class AuthService {
     }
 
     public AuthResponse refresh(String refreshToken) {
-        if (!tokenVerifier.isTokenValid(refreshToken)) {
+        if (!tokenVerifier.isRefreshTokenValid(refreshToken)) {
             throw new InvalidTokenException();
         }
 
@@ -86,7 +86,7 @@ public class AuthService {
     }
 
     public void logout(String refreshToken) {
-        if (!tokenVerifier.isTokenValid(refreshToken)) {
+        if (!tokenVerifier.isRefreshTokenValid(refreshToken)) {
             throw new InvalidTokenException();
         }
 

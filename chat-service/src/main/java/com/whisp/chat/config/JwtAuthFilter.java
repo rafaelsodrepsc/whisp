@@ -35,7 +35,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        if (!tokenVerifier.isTokenValid(token)) {
+        if (!tokenVerifier.isAccessTokenValid(token)) {
             filterChain.doFilter(request, response);
             return;
         }

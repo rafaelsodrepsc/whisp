@@ -145,7 +145,7 @@ class AuthServiceTest {
     void shouldRefreshSuccessfully() {
         String refreshToken = "valid-refresh-token";
 
-        when(tokenVerifier.isTokenValid(refreshToken)).thenReturn(true);
+        when(tokenVerifier.isRefreshTokenValid(refreshToken)).thenReturn(true);
         when(tokenVerifier.extractUserId(refreshToken)).thenReturn(user.getId());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(refreshTokenStore.find(user.getId())).thenReturn(Optional.of(refreshToken));
@@ -161,7 +161,7 @@ class AuthServiceTest {
 
     @Test
     void shouldThrowWhenRefreshTokenIsInvalid() {
-        when(tokenVerifier.isTokenValid("invalid-token")).thenReturn(false);
+        when(tokenVerifier.isRefreshTokenValid("invalid-token")).thenReturn(false);
 
         assertThatThrownBy(() -> authService.refresh("invalid-token"))
                 .isInstanceOf(InvalidTokenException.class);
@@ -171,7 +171,7 @@ class AuthServiceTest {
     void shouldThrowWhenRefreshTokenNotFoundInRedis() {
         String refreshToken = "valid-refresh-token";
 
-        when(tokenVerifier.isTokenValid(refreshToken)).thenReturn(true);
+        when(tokenVerifier.isRefreshTokenValid(refreshToken)).thenReturn(true);
         when(tokenVerifier.extractUserId(refreshToken)).thenReturn(user.getId());
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(refreshTokenStore.find(user.getId())).thenReturn(Optional.empty());
@@ -184,7 +184,7 @@ class AuthServiceTest {
     void shouldThrowWhenUserNotFoundOnRefresh() {
         String refreshToken = "valid-refresh-token";
 
-        when(tokenVerifier.isTokenValid(refreshToken)).thenReturn(true);
+        when(tokenVerifier.isRefreshTokenValid(refreshToken)).thenReturn(true);
         when(tokenVerifier.extractUserId(refreshToken)).thenReturn("ghost-user-id");
         when(userRepository.findById("ghost-user-id")).thenReturn(Optional.empty());
 
@@ -198,7 +198,7 @@ class AuthServiceTest {
     void shouldLogoutSuccessfully() {
         String refreshToken = "valid-refresh-token";
 
-        when(tokenVerifier.isTokenValid(refreshToken)).thenReturn(true);
+        when(tokenVerifier.isRefreshTokenValid(refreshToken)).thenReturn(true);
         when(tokenVerifier.extractUserId(refreshToken)).thenReturn(user.getId());
 
         authService.logout(refreshToken);
@@ -208,7 +208,7 @@ class AuthServiceTest {
 
     @Test
     void shouldThrowWhenLogoutWithInvalidToken() {
-        when(tokenVerifier.isTokenValid("invalid-token")).thenReturn(false);
+        when(tokenVerifier.isRefreshTokenValid("invalid-token")).thenReturn(false);
 
         assertThatThrownBy(() -> authService.logout("invalid-token"))
                 .isInstanceOf(InvalidTokenException.class);
