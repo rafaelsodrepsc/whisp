@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
+import { apiConfig } from '../config/api';
 
 export interface AuthTokens {
   accessToken: string;
@@ -11,7 +12,7 @@ export interface AuthTokens {
   providedIn: 'root',
 })
 export class Auth {
-  private readonly API = 'http://localhost:8081/auth';
+  private readonly API = apiConfig.auth;
 
   private accessToken = signal<string | null>(null);
   isAuthenticated = signal<boolean>(false);

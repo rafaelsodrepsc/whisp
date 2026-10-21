@@ -1,0 +1,13 @@
+.git
+.idea
+.vscode
+**/target
+**/node_modules
+whisp-web/dist
+whisp-web/.angular
+**/.env
+**/.env.*
+**/application.yaml
+**/application-*.yaml
+!**/application-example.yaml
+README.md

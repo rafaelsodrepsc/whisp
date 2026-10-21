@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { Client, IMessage } from '@stomp/stompjs';
+import { apiConfig } from '../config/api';
 import { Message } from './message';
 
 @Injectable({
@@ -13,7 +14,7 @@ export class ChatService {
     this.messages.set([]);
 
     this.client = new Client({
-      brokerURL: 'ws://localhost:8082/ws/websocket',
+      brokerURL: apiConfig.websocket(),
       connectHeaders: { Authorization: `Bearer ${token}` },
       onConnect: () => {
         this.client!.subscribe(`/topic/chat/${roomId}`, (frame: IMessage) => {

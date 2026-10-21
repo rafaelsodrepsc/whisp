@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { apiConfig } from '../config/api';
 
 export interface Message {
   id: string;
@@ -23,7 +24,7 @@ export interface PageResponse<T> {
   providedIn: 'root',
 })
 export class MessageService {
-  private readonly API = 'http://localhost:8083/rooms';
+  private readonly API = apiConfig.messages;
 
   constructor(private http: HttpClient) {}
 
